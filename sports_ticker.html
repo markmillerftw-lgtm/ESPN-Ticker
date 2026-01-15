@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>ESPN-Style Sports Ticker</title>
+<meta charset="UTF-8">
+<title>ESPN RSS Sports Ticker</title>
 <style>
     body { margin:0; overflow:hidden; background:#000; font-family:Arial, sans-serif; }
     #ticker-container {
@@ -17,27 +17,36 @@
     }
     @keyframes scroll {
         from { transform: translateX(0); }
-        to   { transform: translateX(-100%); }
+        to { transform: translateX(-100%); }
     }
     .item { margin-right:60px; }
     .league { color:yellow; }
 </style>
 </head>
 <body>
-<div id="ticker-container"><div id="ticker">Loading scores...</div></div>
+<div id="ticker-container">
+    <div id="ticker">Loading sports headlines...</div>
+</div>
 
 <script>
-// CORS proxy (free)
-const proxy = "https://api.allorigins.win/get?url=";
-
-// Map leagues to TheSportsDB IDs
-const leagues = [
-    {id:4391,label:"NFL"},
-    {id:4387,label:"NBA"},
-    {id:4424,label:"MLB"},
-    {id:4380,label:"NHL"}
+// Free RSS feed URLs (ESPN)
+const feeds = [
+    {url:"https://www.espn.com/espn/rss/nfl/news", label:"NFL"},
+    {url:"https://www.espn.com/espn/rss/nba/news", label:"NBA"},
+    {url:"https://www.espn.com/espn/rss/mlb/news", label:"MLB"},
+    {url:"https://www.espn.com/espn/rss/nhl/news", label:"NHL"}
 ];
 
-async function fetchScores(league) {
+// Use a CORS proxy to fetch RSS feeds
+const proxy = "https://api.allorigins.win/get?url=";
+
+async function fetchRSS(feed) {
     try {
-        const url = encodeURIComponent(`https://www.thesportsdb.com/api/v1/json/3/eve
+        const res = await fetch(proxy + encodeURIComponent(feed.url));
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+        const items = xml.querySelectorAll("item");
+        let text = "";
+        items.forEach((item, i) => {
+            if(i>=5) return; // max 5 items per feed
