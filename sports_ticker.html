@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Sports Ticker</title>
+<title>ESPN-Style Sports Ticker</title>
 <style>
     body { margin:0; overflow:hidden; background:#000; font-family:Arial, sans-serif; }
     #ticker-container {
@@ -27,33 +27,17 @@
 <div id="ticker-container"><div id="ticker">Loading scores...</div></div>
 
 <script>
-async function getLeagueScores(leagueId, label) {
+// CORS proxy (free)
+const proxy = "https://api.allorigins.win/get?url=";
+
+// Map leagues to TheSportsDB IDs
+const leagues = [
+    {id:4391,label:"NFL"},
+    {id:4387,label:"NBA"},
+    {id:4424,label:"MLB"},
+    {id:4380,label:"NHL"}
+];
+
+async function fetchScores(league) {
     try {
-        const res = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=${leagueId}`);
-        const data = await res.json();
-        if (!data?.results) return "";
-        let text = "";
-        data.results.slice(0,5).forEach(game => {
-            const home = `${game.strHomeTeam} ${game.intHomeScore ?? "-"}`;
-            const away = `${game.strAwayTeam} ${game.intAwayScore ?? "-"}`;
-            const status = game.strStatus ?? "Final";
-            text += `<span class="item"><span class="league">${label}</span>: ${home} vs ${away} — ${status}</span>`;
-        });
-        return text;
-    } catch { return ""; }
-}
-
-async function buildTicker() {
-    const nfl = await getLeagueScores(4391,"NFL");
-    const nba = await getLeagueScores(4387,"NBA");
-    const mlb = await getLeagueScores(4424,"MLB");
-    const nhl = await getLeagueScores(4380,"NHL");
-    document.getElementById("ticker").innerHTML =
-        nfl + nba + mlb + nhl || "No recent scores available.";
-}
-
-buildTicker();
-setInterval(buildTicker, 120000);
-</script>
-</body>
-</html>
+        const url = encodeURIComponent(`https://www.thesportsdb.com/api/v1/json/3/eve
